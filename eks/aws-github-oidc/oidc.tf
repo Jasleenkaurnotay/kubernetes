@@ -1,4 +1,5 @@
 # Configure the OIDC provider in the AWS account
+# AWS doesn't validate this for GitHub's provider — placeholder satisfies the schema
 resource "aws_iam_openid_connect_provider" "gh_oidc_provider" {
     url = "https://token.actions.githubusercontent.com"
 
