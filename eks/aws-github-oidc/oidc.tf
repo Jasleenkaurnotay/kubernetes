@@ -1,5 +1,16 @@
 # Configure the OIDC provider in the AWS account
 # AWS doesn't validate this for GitHub's provider — placeholder satisfies the schema
+
+locals {
+
+  github_org = "Jasleenkaurnotay"
+
+  # Map of repositories and the branches allowed to assume the AWS role
+  repo_branches = {
+    "kubernetes" = "main"
+  }
+}
+
 resource "aws_iam_openid_connect_provider" "gh_oidc_provider" {
     url = "https://token.actions.githubusercontent.com"
 
@@ -13,6 +24,7 @@ resource "aws_iam_openid_connect_provider" "gh_oidc_provider" {
 # Create IAM policy that allows github actions to assume a certain role with some permissions
 # 1. Create the template for the IAM Policy
 data "aws_iam_policy_document" "oidc_role_doc" {
+
     statement {
       actions = ["sts:AssumeRoleWithWebIdentity"]
 
@@ -29,7 +41,7 @@ data "aws_iam_policy_document" "oidc_role_doc" {
 
       condition {
         test = "StringLike"
-        values = ["repo:<<<need to make this dynamic>>>>"]
+        values = [ for k,v in local.repo_branches:"repo:${local.github_org}/${k}:ref:refs/heads/${v}" ]
         variable = "token.actions.githubusercontent.com:sub"
       }
     }
