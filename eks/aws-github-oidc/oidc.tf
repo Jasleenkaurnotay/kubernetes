@@ -54,11 +54,13 @@ resource "aws_iam_role" "gh_oidc_role" {
 }
 
 # 3. Create IAM policy to attach to this role
+# Add ssm:GetParameter permissions to the gh_oidc_policy
 data "aws_iam_policy_document" "gh_oidc_policy_doc" {
     statement {
       effect = "Allow"
       actions = [
-        "ecr:*"
+        "ecr:*",
+        "ssm:GetParameter"
       ]
       resources = ["*"]
     }

@@ -1,6 +1,6 @@
 # 1. write aws_ecr_repository resources for the two images
 # 2. Add am aws_ssm_paramter per repo to store the repository_url
-# 3. Add ssm:GetParameter permissions to the gh_oidc_policy
+# 3. Add ssm:GetParameter permissions to the gh_oidc_policy - done in oidc.tf
 # 4. in the workflow, add an aws ssm get-parameter step before the build step to capture the output into an env_var
 
 resource "aws_ecr_repository" "ecr_repos" {
