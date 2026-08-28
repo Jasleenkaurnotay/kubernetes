@@ -30,11 +30,25 @@ jobs:
           ECR_URL=$(aws ssm get-parameter --name "${{ matrix.service }}-ecr-url"  --query "Parameter.Value" --output text)
           REGISTRY=$(echo $ECR_URL | awk -F '/' '{print $1}')
           echo "ecr_url=$ECR_URL" >> "$GITHUB_OUTPUT"
-          echo "registry=$REGISTRY" >> "$GITHUB_OUTPUT". 
+          echo "registry=$REGISTRY" >> "$GITHUB_OUTPUT"
 
       - name: Login to AWS ECR
         uses: docker/login-action@v4
         with:
           registry: ${{ steps.fetch-ecr-url.outputs.registry }}
           ecr: auto
-          
+
+      # Create and boot a BuildKit builder instance
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      
+      # Build and push the docker image using Buildx
+      # tags is ecr-repo+github sha
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: app/${{ matrix.service }}
+          push: true
+          cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache, mode=max
+          cache-from: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache
+          tags: ${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ github.sha }}
