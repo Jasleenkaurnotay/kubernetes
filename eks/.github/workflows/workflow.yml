@@ -49,6 +49,6 @@ jobs:
         with:
           context: app/${{ matrix.service }}
           push: true
-          cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache, mode=max
+          cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache,mode=max
           cache-from: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache
           tags: ${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ github.sha }}
