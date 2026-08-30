@@ -32,3 +32,8 @@ variable "rds_username" {
     description = "Enter the Master username for the RDS server"
     type = string  
 }
+
+variable "eks_cluster_name" {
+    description = "Enter the name of the EKS cluster"
+    type = string  
+}
