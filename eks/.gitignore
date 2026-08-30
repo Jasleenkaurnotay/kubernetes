@@ -2,3 +2,5 @@ eks-core-infra/.terraform
 eks-core-infra/.terraform.lock.hcl
 aws-github-oidc/.terraform
 aws-github-oidc/.terraform.lock.hcl
+app-infra/.terraform
+app-infra/.terraform.lock.hcl

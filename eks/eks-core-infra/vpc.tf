@@ -26,11 +26,13 @@ module "vpc" {
     single_nat_gateway = true
 
     public_subnet_tags = {
+      "Tier" = "public"
       "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
       "kubernetes.io/role/elb" = "1"
     }
 
     private_subnet_tags = {
+      "Tier" = "private"
       "kubernetes.io/cluster/${var.eks_cluster_name}" = "shared"
       "kubernetes.io/role/internal-elb" = "1"
     }
