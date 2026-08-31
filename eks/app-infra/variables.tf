@@ -37,3 +37,9 @@ variable "eks_cluster_name" {
     description = "Enter the name of the EKS cluster"
     type = string  
 }
+
+variable "flask_debug" {
+    description = "Enter the value for environment variable FLASK_DEBUG"
+    type = number
+    default = 0  
+}
