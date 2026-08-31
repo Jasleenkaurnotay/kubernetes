@@ -5,11 +5,14 @@ resource "kubernetes_secret_v1" "rds_secret" {
     }
 
     data = {
-      # 1. Referece the Secret ARN/Name from rds.tf
-      secret_arn = aws_secretsmanager_secret.rds_pass.arn
+      # 1. Reference the exact connection string value from rds.tf
+      DATABASE_URL = aws_secretsmanager_secret_version.rds_pass_value.secret_string
 
-      #2. Reference the exact connection string value from rds.tf
-      connection_string = aws_secretsmanager_secret_version.rds_pass_value.secret_string
+      SECRET_KEY = random_password.backend_secret_key.result
+
+      DB_PASSWORD = aws_db_instance.rds.password
+
+      DB_USERNAME = aws_db_instance.rds.username
     }
     
     type = "Opaque"

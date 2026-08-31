@@ -83,3 +83,10 @@ resource "aws_secretsmanager_secret_version" "rds_pass_value" {
   secret_id = aws_secretsmanager_secret.rds_pass.id
   secret_string = "postgresql://${var.rds_username}:${random_password.rds_password.result}@${aws_db_instance.rds.address}:5432/${aws_db_instance.rds.db_name}"
 }
+
+# Generate random, secure backend_secret_key for use in k8-secrets
+# Generate random password for RDS server
+resource "random_password" "backend_secret_key" {
+  length = 16
+  special = true
+}
