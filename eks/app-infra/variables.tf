@@ -13,11 +13,6 @@ variable "pvt_sub_tag_value" {
     type = string  
 }
 
-variable "eks_cluster_name" {
-    description = "Enter the name of the EKS cluster"
-    type = string  
-}
-
 variable "rds_name" {
     description = "Enter the name you would like to assign to the RDS server"
     type = string
