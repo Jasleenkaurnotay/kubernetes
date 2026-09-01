@@ -38,3 +38,13 @@ variable "flask_debug" {
     type = number
     default = 0  
 }
+
+variable "backend_pod_label" {
+    description = "Enter the name you would like to assign as the label of backend-pods. It would also serve as the selector for k8 service"
+    type = string  
+}
+
+variable "frontend_pod_label" {
+    description = "Enter the name you would like to assign as the label of frontend-pods. It would also serve as the selector for k8 service"
+    type = string  
+}

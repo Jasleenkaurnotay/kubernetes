@@ -1,6 +1,6 @@
 resource "kubernetes_secret_v1" "rds_secret" {
     metadata {
-      name = "rds-secret"
+      name = "devopsquiz-app-secrets"
       namespace = kubernetes_namespace_v1.k8_namespace.metadata[0].name
     }
 
