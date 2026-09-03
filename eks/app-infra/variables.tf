@@ -3,6 +3,16 @@ variable "svc_names" {
     type = list(string)
 }
 
+variable "frontend_svc_name" {
+    description = "Enter the name of the frontend service for which ECR repo is required"
+    type = string  
+}
+
+variable "backend_svc_name" {
+    description = "Enter the name of the backend service for which ECR repo is required"
+    type = string
+}
+
 variable "vpc_tag_value" {
     description = "Enter the value of the VPC tag name: ProjectName"
     type = string  
@@ -47,4 +57,16 @@ variable "backend_pod_label" {
 variable "frontend_pod_label" {
     description = "Enter the name you would like to assign as the label of frontend-pods. It would also serve as the selector for k8 service"
     type = string  
+}
+
+variable "backend_image_tag" {
+    description = "Enter the image tag for the Backend docker image"
+    type = string
+    default = "latest"
+}
+
+variable "frontend_image_tag" {
+    description = "Enter the image tag for the Frontend docker image"
+    type = string
+    default = "latest"
 }
