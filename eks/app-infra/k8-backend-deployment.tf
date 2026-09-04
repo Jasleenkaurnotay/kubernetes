@@ -1,9 +1,9 @@
-resource "kubernetes_deployment_v1" "fe_deployment" {
+resource "kubernetes_deployment_v1" "be_deployment" {
     metadata {
-      name = "fe-deployment"
+      name = "be-deployment"
       namespace = kubernetes_namespace_v1.k8_namespace.metadata[0].name
       labels = {
-        app = var.frontend_pod_label
+        app = var.backend_pod_label
       }
     }
 
@@ -11,29 +11,29 @@ resource "kubernetes_deployment_v1" "fe_deployment" {
       replicas = 2
       selector {
         match_labels = {
-          app = var.frontend_pod_label
+          app = var.backend_pod_label
         }
       }
 
       template {
         metadata {
           labels = {
-            app = var.frontend_pod_label
+            app = var.backend_pod_label
           }
         }
 
         spec {
           container {
-            image = "${aws_ecr_repository.ecr_repos[var.frontend_svc_name].repository_url}:${var.frontend_image_tag}"
-            name = "frontend-container"
+            image = "${aws_ecr_repository.ecr_repos[var.backend_svc_name].repository_url}:${var.backend_image_tag}"
+            name = "backend-container"
             port {
               protocol = "TCP"
-              container_port = 80
+              container_port = 8000
             }
             liveness_probe {
               http_get {
-                path = "/health"
-                port = 80
+                path = "/"
+                port = 8000
               }
               initial_delay_seconds = 10
               period_seconds = 3
@@ -42,17 +42,22 @@ resource "kubernetes_deployment_v1" "fe_deployment" {
             }
             resources {
               requests = {
-                memory = "50Mi"
-                cpu = "50m"
+                memory = "100Mi"
+                cpu = "0.5"
               }
               limits = {
-                memory = "70Mi"
-                cpu = "70m"
+                memory = "150Mi"
+                cpu = "0.7"
               }
             }
             env_from {
               config_map_ref {
-                name = kubernetes_config_map_v1.frontend_config_map.metadata[0].name
+                name = kubernetes_config_map_v1.backend_config_map.metadata[0].name
+              }
+            }
+            env_from {
+              secret_ref {
+                name = kubernetes_secret_v1.rds_secret.metadata[0].name
               }
             }
           }
