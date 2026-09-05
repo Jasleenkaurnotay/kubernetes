@@ -32,7 +32,7 @@ resource "kubernetes_deployment_v1" "be_deployment" {
             }
             liveness_probe {
               http_get {
-                path = "/"
+                path = "/health"
                 port = 8000
               }
               initial_delay_seconds = 10
@@ -40,14 +40,24 @@ resource "kubernetes_deployment_v1" "be_deployment" {
               success_threshold = 1
               timeout_seconds = 15
             }
+            readiness_probe {
+              http_get {
+                path = "/ready"
+                port = 8000
+              }
+              initial_delay_seconds = 10
+              period_seconds         = 5
+              failure_threshold      = 3
+              timeout_seconds        = 5
+            }
             resources {
               requests = {
                 memory = "100Mi"
-                cpu = "0.5"
+                cpu = "500m"
               }
               limits = {
                 memory = "150Mi"
-                cpu = "0.7"
+                cpu = "700m"
               }
             }
             env_from {

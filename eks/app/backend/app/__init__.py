@@ -40,5 +40,14 @@ def create_app(config_class=Config):
     @app.route('/health', methods=['GET'])
     def health_check():
         return {"status": "healthy"}, 200
+
+    # Add a readiness check route that checks DB connectivity
+    @app.route('/ready', methods=['GET'])
+    def readiness_check():
+        try:
+            db.session.execute(db.text('SELECT 1'))
+            return {"status": "ready"}, 200
+        except Exception as e:
+            return {"status": "not ready", "error": str(e)}, 503
     
     return app
