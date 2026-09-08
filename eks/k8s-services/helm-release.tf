@@ -15,29 +15,15 @@ resource "helm_release" "lbc_helm_release" {
   cleanup_on_fail = true
   description = "Helm releaase for LB deployment on EKS cluster"
   namespace = "kube-system"
-  values = 
   wait = true
-  set {
-    name = "clusterName"
-    value = var.eks_cluster_name
-  }
-
-  set {
-    name = "region"
-    value = var.aws_region
-  }
-
-  set {
-    name = "vpcId"
-    value = data.aws_vpc.eks_vpc_id.id
-  }
-
-
+  values = [ yamlencode({
+    clusterName = var.eks_cluster_name
+    region = var.aws_region
+    vpcId = data.aws_vpc.eks_vpc_id.id
+    serviceAccount = {
+      annotations = {
+        "eks.amazonaws.com/role-arn" = aws_iam_role.lbc_role.arn
+      }
+    }
+  }) ]
 }
-
-
-
-clusterName → var.eks_cluster_name
-vpcId → data.aws_vpc.eks_vpc_id.id
-region → probably a literal or a var
-serviceAccount.annotations["eks.amazonaws.com/role-arn"] → aws_iam_role.lbc_role.arn
