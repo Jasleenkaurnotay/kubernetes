@@ -3,9 +3,9 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
       namespace = var.k8_svc_namespace
       name = "${var.eks_cluster_name}-ingress"
       annotations = {
-      "alb.ingress.kubernetes.io/scheme"           = # ...
-      "alb.ingress.kubernetes.io/target-type"      = # ...
-      "alb.ingress.kubernetes.io/healthcheck-path" = # ...
+      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"      = "ip"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/"
     }
     }
 
@@ -16,6 +16,7 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
             http {
                 path {
                     path = "/api"
+                    path_type = "Prefix"
 
                     backend {
                         service {
@@ -28,6 +29,7 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
                 }
                 path {
                     path = "/"
+                    path_type = "Prefix"
 
                     backend {
                         service {

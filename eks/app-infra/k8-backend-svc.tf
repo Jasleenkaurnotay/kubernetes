@@ -2,6 +2,10 @@ resource "kubernetes_service_v1" "backend_svc" {
     metadata {
       name = "backend-service"
       namespace = kubernetes_namespace_v1.k8_namespace.metadata[0].name
+
+      annotations = {
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
+      }
     }
     spec {
       selector = {
