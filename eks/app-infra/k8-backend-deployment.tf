@@ -74,5 +74,5 @@ resource "kubernetes_deployment_v1" "be_deployment" {
         }
       }
     }
-  
+  depends_on = [kubernetes_job_v1.backend_mig_job]
 }
