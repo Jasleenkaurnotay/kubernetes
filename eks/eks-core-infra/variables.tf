@@ -1,3 +1,8 @@
+variable "environment" {
+    description = "This terraform block can be used for dev and prod environments. please enter the environment to which you want to deploy: dev or prod"
+    type = string  
+}
+
 variable "vpc_name" {
     type = string
 }

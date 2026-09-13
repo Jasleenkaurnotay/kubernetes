@@ -7,6 +7,24 @@
 # Essential add ons - CNI, kube-proxy, core-dns etc
 # Add on configuration
 
+locals {
+  node_config = {
+    dev = {
+      instance_types = ["t3.medium"]
+      min_size = 1
+      max_size = 2
+      desired_size = 1
+    }
+    prod = {
+      instance_types = ["t3.large"]
+      min_size = 2
+      max_size = 5
+      desired_size = 3
+    }
+  }
+
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 21.24.0"
@@ -38,11 +56,11 @@ module "eks" {
     "${var.eks_cluster_name}-ng" = {
       # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
       ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["t3.medium"]
+      instance_types = local.node_config[var.environment].instance_types
 
-      min_size     = 1
-      max_size     = 2
-      desired_size = 1
+      min_size     = local.node_config[var.environment].min_size
+      max_size     = local.node_config[var.environment].max_size
+      desired_size = local.node_config[var.environment].desired_size
     }
   }
 
