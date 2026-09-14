@@ -43,3 +43,18 @@ variable "k8_fe_svc_port" {
     description = "Enter the port on which the frontend kubernetes service accepts requests"
     type = number  
 }
+
+variable "domain_name" {
+    description = "Enter the domain name the Route 53 hosted zone is created for"
+    type = string  
+}
+
+variable "cert_domain_name" {
+    description = "Enter the domain name the ACM certificate is issued to"
+    type = string  
+}
+
+variable "route53_record_name" {
+    description = "Enter Route53 record to which you want to map the ALB"
+    type = string  
+}

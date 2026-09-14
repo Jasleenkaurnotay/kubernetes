@@ -6,7 +6,14 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/healthcheck-path" = "/"
-    }
+      "alb.ingress.kubernetes.io/tags" = "Project=k8s-services,ManagedBy=Terraform"
+      "alb.ingress.kubernetes.io/certificate-arn" = data.aws_acm_certificate.issued_https_cert.arn
+      "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
+        { "HTTP" : 80 },
+        { "HTTPS" : 443 }
+      ])
+      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
+        }
     }
 
       spec {
@@ -47,5 +54,11 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
 }
 
 
-
+# Data block to query the ALB created by the Ingress controller
+data "aws_lb" "ingress_alb" {
+    tags = {
+      Project = "k8s-services"
+      ManagedBy = "Terraform"
+    }  
+}
 

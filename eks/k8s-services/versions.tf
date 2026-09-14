@@ -10,4 +10,13 @@ terraform {
         version = "~> 3.1"
     }
   }
+
+  backend "s3" {
+    bucket = "mylabs-terraform-state"
+    key = "k8s-services/dev/state/terraform.tfstate"
+    region = "us-east-1"
+    encrypt = true
+
+    use_lockfile = true
+  }
 }

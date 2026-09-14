@@ -76,7 +76,8 @@ resource "aws_db_instance" "rds" {
 
 # Store RDS password in secrets manager
 resource "aws_secretsmanager_secret" "rds_pass" {
-  name = "${var.rds_name}"  
+  name = "${var.rds_name}"
+  recovery_window_in_days = 0  
 }
 
 resource "aws_secretsmanager_secret_version" "rds_pass_value" {
