@@ -6,7 +6,7 @@ data "aws_vpc" "eks_vpc_id" {
     }
 }
 
-# Create the helm_release
+# Create the helm_release for LBC
 resource "helm_release" "lbc_helm_release" {
   name = "${var.project_name}-lbc-helm-release"
   repository = "https://aws.github.io/eks-charts"
