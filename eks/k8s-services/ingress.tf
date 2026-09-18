@@ -13,13 +13,18 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
         { "HTTPS" : 443 }
       ])
       "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-        }
+
+      #-----Ingress Grouping Configuration-----
+      "alb.ingress.kubernetes.io/group.name" = "${var.project_name}-${var.eks_cluster_name}-alb-group"
+      }
     }
 
       spec {
         ingress_class_name = "alb"
 
         rule {
+            host = var.route53_record_name
+            
             http {
                 path {
                     path = "/api"
@@ -53,16 +58,6 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
       }
 }
 
-
-# Data block to query the ALB created by the Ingress controller
-data "aws_lb" "ingress_alb" {
-    tags = {
-      Project = "k8s-services"
-      ManagedBy = "Terraform"
-    }
-    depends_on = [ kubernetes_ingress_v1.eks_ingress ]
-}
-
 # Create Ingress object for ArgoCD server
 resource "kubernetes_ingress_v1" "argocd_ingress" {
     metadata {
@@ -77,6 +72,8 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
       "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
         { "HTTPS" : 443 }
       ])
+      #-----Ingress Grouping Configuration-----
+      "alb.ingress.kubernetes.io/group.name" = "${var.project_name}-${var.eks_cluster_name}-alb-group"
       }
     }
 
@@ -107,11 +104,10 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
     depends_on = [ helm_release.argocd_helm_release ]
 }
 
-# Data block to query the ALB created by the Ingress controller
-data "aws_lb" "argocd_ingress_alb" {
+# Data block to query the shared ALB created by the Ingress controller, when either Ingress object reconciles
+data "aws_lb" "shared_alb" {
     tags = {
-      Project = "argocd-k8s-services"
-      ManagedBy = "Terraform"
+      "ingress.k8s.aws/stack" = "${var.project_name}-${var.eks_cluster_name}-alb-group"
     }
-    depends_on = [ kubernetes_ingress_v1.argocd_ingress ]
+    depends_on = [ kubernetes_ingress_v1.argocd_ingress, kubernetes_ingress_v1.eks_ingress ]
 }

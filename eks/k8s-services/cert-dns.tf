@@ -17,8 +17,8 @@ resource "aws_route53_record" "alb_route_record" {
     type = "A"
 
     alias {
-        name = data.aws_lb.ingress_alb.dns_name
-        zone_id = data.aws_lb.ingress_alb.zone_id
+        name = data.aws_lb.shared_alb.dns_name
+        zone_id = data.aws_lb.shared_alb.zone_id
         evaluate_target_health = true
     }
   
@@ -31,8 +31,8 @@ resource "aws_route53_record" "argocd_alb_route_record" {
     type = "A"
 
     alias {
-        name = data.aws_lb.argocd_ingress_alb.dns_name
-        zone_id = data.aws_lb.argocd_ingress_alb.zone_id
+        name = data.aws_lb.shared_alb.dns_name
+        zone_id = data.aws_lb.shared_alb.zone_id
         evaluate_target_health = true
     }
   
