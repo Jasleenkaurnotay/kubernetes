@@ -58,3 +58,13 @@ variable "route53_record_name" {
     description = "Enter Route53 record to which you want to map the ALB"
     type = string  
 }
+
+variable "argo_route53_domain_name" {
+    description = "Enter the Route53 domain name mapped to the ArgoCD ALB"
+    type = string
+}
+
+variable "argo_release_name" {
+    description = "Enter the release name of the argocd helm chart version"
+    type = string
+}

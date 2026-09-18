@@ -23,3 +23,17 @@ resource "aws_route53_record" "alb_route_record" {
     }
   
 }
+
+# Create Route 53 alias entry mapping the domain name to the Argocd ALB
+resource "aws_route53_record" "argocd_alb_route_record" {
+    zone_id = data.aws_route53_zone.dns_zone.zone_id
+    name = var.argo_route53_domain_name
+    type = "A"
+
+    alias {
+        name = data.aws_lb.argocd_ingress_alb.dns_name
+        zone_id = data.aws_lb.argocd_ingress_alb.zone_id
+        evaluate_target_health = true
+    }
+  
+}

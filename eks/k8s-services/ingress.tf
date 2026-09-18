@@ -50,7 +50,7 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
             }
         }
 
-      }  
+      }
 }
 
 
@@ -59,7 +59,8 @@ data "aws_lb" "ingress_alb" {
     tags = {
       Project = "k8s-services"
       ManagedBy = "Terraform"
-    }  
+    }
+    depends_on = [ kubernetes_ingress_v1.eks_ingress ]
 }
 
 # Create Ingress object for ArgoCD server
@@ -70,43 +71,31 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
       annotations = {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
       "alb.ingress.kubernetes.io/tags" = "Project=argocd-k8s-services,ManagedBy=Terraform"
       "alb.ingress.kubernetes.io/certificate-arn" = data.aws_acm_certificate.issued_https_cert.arn
       "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
         { "HTTPS" : 443 }
       ])
-      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-        }
+      }
     }
 
       spec {
         ingress_class_name = "alb"
 
         rule {
+            host = var.argo_route53_domain_name
+            
             http {
-                path {
-                    path = "/api"
-                    path_type = "Prefix"
-
-                    backend {
-                        service {
-                            name = var.k8_be_svc_name
-                            port {
-                                number = var.k8_be_svc_port
-                            }
-                        }
-                    }
-                }
                 path {
                     path = "/"
                     path_type = "Prefix"
 
                     backend {
                         service {
-                            name = var.k8_fe_svc_name
+                            name = "${var.argo_release_name}-argocd-server"
                             port {
-                                number = var.k8_fe_svc_port
+                                number = 80
                             }
                         }
                     }
@@ -114,5 +103,15 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
             }
         }
 
-      }  
+      }
+    depends_on = [ helm_release.argocd_helm_release ]
+}
+
+# Data block to query the ALB created by the Ingress controller
+data "aws_lb" "argocd_ingress_alb" {
+    tags = {
+      Project = "argocd-k8s-services"
+      ManagedBy = "Terraform"
+    }
+    depends_on = [ kubernetes_ingress_v1.argocd_ingress ]
 }
