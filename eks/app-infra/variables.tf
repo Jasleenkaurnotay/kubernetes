@@ -70,3 +70,8 @@ variable "frontend_image_tag" {
     type = string
     default = "latest"
 }
+
+variable "argo_route53_domain_name" {
+    description = "Enter the Route53 domain name mapped to the ArgoCD ALB"
+    type = string
+}
