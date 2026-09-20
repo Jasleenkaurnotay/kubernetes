@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fe-deployment
+  namespace: devopsquiz-app
+  labels:
+    app: frontend
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+        - image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+          name: "frontend-container"
+          ports:
+            - protocol: "TCP"
+              containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 15
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 50m
+          
+            limits:
+              memory: 70Mi
+              cpu: 70m
+            
+          envFrom:
+            - configMapRef:
+                name: frontend-configmap
