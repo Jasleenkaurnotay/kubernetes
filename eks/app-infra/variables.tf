@@ -75,3 +75,8 @@ variable "argo_route53_domain_name" {
     description = "Enter the Route53 domain name mapped to the ArgoCD ALB"
     type = string
 }
+
+variable "k8s_argocd_namespace" {
+    description = "Enter the name of the ArgoCd installation namespace"
+    type = string  
+}

@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backend-mig-job
+  namespace: devopsquiz-app
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+  
+spec:
+  backoffLimit: 2
+
+  template:
+    metadata:
+        name: backend-mig-job
+    spec:
+      containers:
+        - name: migration-container
+          image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+          command: ["./migrate.sh"]
+
+          envFrom:
+            - configMapRef:
+                name: backend-configmap
+            - secretRef:
+                name: devopsquiz-app-secrets
+      restartPolicy: OnFailure
