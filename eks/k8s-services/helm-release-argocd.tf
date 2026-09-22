@@ -1,9 +1,11 @@
 # Create the helm_release for ArgoCD
 resource "helm_release" "argocd_helm_release" {
+  wait = true
   name = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart = "argo-cd"
   version = "10.9.1" # Use latest version
+  cleanup_on_fail = true
   namespace = kubernetes_namespace_v1.k8_argocd_namespace.metadata[0].name
   values = [yamlencode({
     server = {

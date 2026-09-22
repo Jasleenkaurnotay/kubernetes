@@ -21,6 +21,7 @@ resource "helm_release" "lbc_helm_release" {
     region = var.aws_region
     vpcId = data.aws_vpc.eks_vpc_id.id
     serviceAccount = {
+      name = "aws-load-balancer-controller"
       annotations = {
         "eks.amazonaws.com/role-arn" = aws_iam_role.lbc_role.arn
       }

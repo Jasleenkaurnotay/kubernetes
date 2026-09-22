@@ -9,6 +9,14 @@ terraform {
         source = "hashicorp/helm"
         version = "~> 3.1"
     }
+    argocd = {
+      source = "argoproj-labs/argocd"
+      version = "~> 7.15"
+    }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "~> 3.1"
+    }
   }
 
   backend "s3" {

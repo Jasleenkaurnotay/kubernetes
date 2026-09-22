@@ -56,6 +56,7 @@ resource "kubernetes_ingress_v1" "eks_ingress" {
         }
 
       }
+    depends_on = [helm_release.lbc_helm_release]
 }
 
 # Create Ingress object for ArgoCD server
@@ -67,7 +68,7 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
-      "alb.ingress.kubernetes.io/tags" = "Project=argocd-k8s-services,ManagedBy=Terraform"
+      "alb.ingress.kubernetes.io/tags" = "Project=k8s-services,ManagedBy=Terraform"
       "alb.ingress.kubernetes.io/certificate-arn" = data.aws_acm_certificate.issued_https_cert.arn
       "alb.ingress.kubernetes.io/listen-ports" = jsonencode([
         { "HTTPS" : 443 }
@@ -90,7 +91,7 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
 
                     backend {
                         service {
-                            name = "${var.argo_release_name}-argocd-server"
+                            name = "argocd-server"
                             port {
                                 number = 80
                             }
@@ -101,7 +102,7 @@ resource "kubernetes_ingress_v1" "argocd_ingress" {
         }
 
       }
-    depends_on = [ helm_release.argocd_helm_release ]
+        depends_on = [ helm_release.argocd_helm_release, helm_release.lbc_helm_release ]
 }
 
 # Data block to query the shared ALB created by the Ingress controller, when either Ingress object reconciles

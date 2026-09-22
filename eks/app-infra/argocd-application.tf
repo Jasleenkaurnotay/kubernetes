@@ -1,4 +1,5 @@
 resource "argocd_application" "argocd_application" {
+  wait = true
   metadata {
     name      = "argocd-application"
     namespace = var.k8s_argocd_namespace

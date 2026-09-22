@@ -4,3 +4,5 @@ aws-github-oidc/.terraform
 aws-github-oidc/.terraform.lock.hcl
 app-infra/.terraform
 app-infra/.terraform.lock.hcl
+k8s-services/.terraform
+k8s-services/.terraform.lock.hcl
