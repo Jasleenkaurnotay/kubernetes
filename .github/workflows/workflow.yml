@@ -1,0 +1,82 @@
+name: k8-cluster-workflow
+
+on:
+  workflow_dispatch:
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        service: [frontend, backend]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ vars.OIDC_AWS_ROLE }}   # we configure the terraform output as a github variable and use in the workflow
+          role-session-name: Build-eks-image-session
+
+      - name: Fetch ECR URL from SSM
+        id: fetch-ecr-url
+        run: |
+          ECR_URL=$(aws ssm get-parameter --name "${{ matrix.service }}-ecr-url"  --query "Parameter.Value" --output text)
+          REGISTRY=$(echo $ECR_URL | awk -F '/' '{print $1}')
+          echo "ecr_url=$ECR_URL" >> "$GITHUB_OUTPUT"
+          echo "registry=$REGISTRY" >> "$GITHUB_OUTPUT"
+
+      - name: Login to AWS ECR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ steps.fetch-ecr-url.outputs.registry }}
+          ecr: auto
+
+      # Create and boot a BuildKit builder instance
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      
+      # Build and push the docker image using Buildx
+      # tags is ecr-repo+github sha
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: app/${{ matrix.service }}
+          push: true
+          cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache,mode=max
+          cache-from: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache
+          tags: ${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ github.sha }}
+
+  update-k8s-manifests:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Update commit-id to k8-manifests
+        uses: actions/checkout@v7
+
+      - name: Update image tag on k8s k8-manifests
+        working-directory: argo-k8s-manifests
+        run: |
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" argo-k8s-manifests/be-deployment.yml
+          sed -i "s|image: .*/frontend:latest|image: ${ECR_URL_FRONTEND}:${GITHUB_SHA}|" argo-k8s-manifests/fe-deployment.yml
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" argo-k8s-manifests/backend-mig-job.yml 
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add argo-k8s-manifests/be-deployment.yml argo-k8s-manifests/fe-deployment.yml argo-k8s-manifests/backend-mig-job.yml
+          git commit -m "GitOps: bump image tags to ${{ github.sha }}"
+          git push
+
+
+        
