@@ -9,6 +9,11 @@ locals {
   repo_branches = {
     "kubernetes" = "main"
   }
+
+  # Map of repositories to the GitHub Environments allowed to assume the role
+  repo_environments = {
+    "kubernetes" = ["dev", "prod"]
+  }
 }
 
 resource "aws_iam_openid_connect_provider" "gh_oidc_provider" {
@@ -41,7 +46,14 @@ data "aws_iam_policy_document" "oidc_role_doc" {
 
       condition {
         test = "StringLike"
-        values = [ for k,v in local.repo_branches:"repo:${local.github_org}/${k}:ref:refs/heads/${v}" ]
+        values = concat(
+          [for k, v in local.repo_branches : "repo:${local.github_org}/${k}:ref:refs/heads/${v}"],
+          flatten([
+            for repo, envs in local.repo_environments : [
+              for env in envs : "repo:${local.github_org}/${repo}:environment:${env}"
+            ]
+          ])
+        )
         variable = "token.actions.githubusercontent.com:sub"
       }
     }
