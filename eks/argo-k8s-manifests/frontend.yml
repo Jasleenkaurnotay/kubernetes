@@ -19,7 +19,7 @@ spec:
 
     spec:
       containers:
-        - image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+        - image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/frontend:e629a584cce49cebeb6fb92e444225eefb97293b
           name: "frontend-container"
           ports:
             - protocol: "TCP"

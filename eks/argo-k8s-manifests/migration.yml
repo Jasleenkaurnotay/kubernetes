@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: migration-container
-          image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+          image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:e629a584cce49cebeb6fb92e444225eefb97293b
           command: ["./migrate.sh"]
 
           envFrom:
