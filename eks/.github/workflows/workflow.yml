@@ -3,13 +3,14 @@ name: k8-cluster-workflow
 on:
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         service: [frontend, backend]
@@ -47,8 +48,35 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
-          context: app/${{ matrix.service }}
+          context: eks/app/${{ matrix.service }}
           push: true
           cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache,mode=max
           cache-from: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache
           tags: ${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ github.sha }}
+
+  update-k8s-manifests:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Update commit-id to k8-manifests
+        uses: actions/checkout@v7
+
+      - name: Update image tag on k8s k8-manifests
+        working-directory: eks/argo-k8s-manifests
+        run: |
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/be-deployment.yml
+          sed -i "s|image: .*/frontend:latest|image: ${ECR_URL_FRONTEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/fe-deployment.yml
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/backend-mig-job.yml 
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add eks/k8s-manifests/be-deployment.yml eks/k8s-manifests/fe-deployment.yml eks/k8s-manifests/backend-mig-job.yml
+          git commit -m "GitOps: bump image tags to ${{ github.sha }}"
+          git push
+
+
+        
