@@ -30,7 +30,7 @@ resource "argocd_application" "argocd_application" {
     source {
       repo_url        = "https://github.com/Jasleenkaurnotay/kubernetes.git"
       path = "eks/argo-k8s-manifests"
-      target_revision = "main"
+      target_revision = "gitops-deploy"
     }
   }
 }

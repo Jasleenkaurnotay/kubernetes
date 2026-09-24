@@ -67,9 +67,9 @@ jobs:
 
       - name: Update image tag on k8s k8-manifests
         run: |
-          sed -i "s|image: .*/backend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}|" eks/argo-k8s-manifests/be-deployment.yml
-          sed -i "s|image: .*/frontend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA}|" eks/argo-k8s-manifests/fe-deployment.yml
-          sed -i "s|image: .*/backend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}|" eks/argo-k8s-manifests/backend-mig-job.yml 
+          sed -i "s|image: .*/backend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}|" eks/argo-k8s-manifests/backend.yml
+          sed -i "s|image: .*/frontend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/frontend:${GITHUB_SHA}|" eks/argo-k8s-manifests/frontend.yml
+          sed -i "s|image: .*/backend:latest|image: 067270456427.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}|" eks/argo-k8s-manifests/migration.yml 
       
       - name: Commit and push changes
         run: |
