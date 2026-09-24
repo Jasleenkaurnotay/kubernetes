@@ -3,11 +3,11 @@
 
 locals {
 
-  github_org = "Jasleenkaurnotay"
+  github_org = "Jasleenkaurnotay@129045891"
 
   # Map of repositories and the branches allowed to assume the AWS role
   repo_branches = {
-    "kubernetes" = "main"
+    "kubernetes@1343761908" = "main"
   }
 
   # Map of repositories to the GitHub Environments allowed to assume the role
