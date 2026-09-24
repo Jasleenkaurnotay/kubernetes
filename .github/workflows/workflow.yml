@@ -66,15 +66,15 @@ jobs:
       - name: Update image tag on k8s k8-manifests
         working-directory: argo-k8s-manifests
         run: |
-          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" argo-k8s-manifests/be-deployment.yml
-          sed -i "s|image: .*/frontend:latest|image: ${ECR_URL_FRONTEND}:${GITHUB_SHA}|" argo-k8s-manifests/fe-deployment.yml
-          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" argo-k8s-manifests/backend-mig-job.yml 
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/be-deployment.yml
+          sed -i "s|image: .*/frontend:latest|image: ${ECR_URL_FRONTEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/fe-deployment.yml
+          sed -i "s|image: .*/backend:latest|image: ${ECR_URL_BACKEND}:${GITHUB_SHA}|" eks/argo-k8s-manifests/backend-mig-job.yml 
       
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add argo-k8s-manifests/be-deployment.yml argo-k8s-manifests/fe-deployment.yml argo-k8s-manifests/backend-mig-job.yml
+          git add eks/argo-k8s-manifests/be-deployment.yml eks/argo-k8s-manifests/fe-deployment.yml eks/argo-k8s-manifests/backend-mig-job.yml
           git commit -m "GitOps: bump image tags to ${{ github.sha }}"
           git push
 
