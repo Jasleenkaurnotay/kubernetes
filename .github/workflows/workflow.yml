@@ -48,7 +48,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
-          context: app/${{ matrix.service }}
+          context: eks/app/${{ matrix.service }}
           push: true
           cache-to: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache,mode=max
           cache-from: type=registry,ref=${{ steps.fetch-ecr-url.outputs.ecr_url }}:${{ matrix.service }}-cache
