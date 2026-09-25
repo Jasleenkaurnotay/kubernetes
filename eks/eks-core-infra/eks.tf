@@ -42,7 +42,7 @@ module "eks" {
 
   # Optional
   endpoint_public_access = true
-  endpoint_public_access_cidrs = [ "165.99.174.195/32"]
+  endpoint_public_access_cidrs = [ "106.192.122.160/32"]
   endpoint_private_access = true
 
   # Optional: Adds the current caller identity as an administrator via cluster access entry

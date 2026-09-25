@@ -26,6 +26,14 @@ data "aws_security_group" "eks_default_sg" {
   }
 }
 
+# Query the security group attached to the EKS node
+data "aws_security_group" "eks_node_sg" {
+  filter {
+    name   = "tag:Name"
+    values = ["${var.eks_cluster_name}-node"]
+  }
+}
+
 # Create custom sg to attach to RDS server
 resource "aws_security_group" "rds_sg" {
   name = "${var.rds_name}-sg"
@@ -39,6 +47,15 @@ resource "aws_vpc_security_group_ingress_rule" "allow_from_eks" {
   to_port = 5432
   referenced_security_group_id = data.aws_security_group.eks_default_sg.id
   ip_protocol = "tcp"  
+}
+
+# Create ingress security rule to allow node to reach the DB:
+resource "aws_vpc_security_group_ingress_rule" "allow_from_eks_nodes" {
+  security_group_id            = aws_security_group.rds_sg.id
+  from_port                    = 5432
+  to_port                      = 5432
+  referenced_security_group_id = data.aws_security_group.eks_node_sg.id
+  ip_protocol                  = "tcp"
 }
 
 # Egress rule is not required
