@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-service
+  namespace: ecom-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: products-service
+  template:
+    metadata:
+      labels:
+        app: products-service
+    spec:
+      containers:
+        - name: products-service
+          image: product-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8001
+          env:
+            - name: PORT
+              value: "8001"
+            - name: GO_ENV
+              value: production
+            - name: PRODUCT_DB_HOST
+              value: pg-products-svc
+            - name: PRODUCT_DB_PORT
+              value: "5432"
+            - name: PRODUCT_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: products-db-credentials
+                  key: POSTGRES_USER
+            - name: PRODUCT_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: products-db-credentials
+                  key: POSTGRES_PASSWORD
+            - name: PRODUCT_DB_NAME
+              value: products
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-service
+  namespace: ecom-app
+spec:
+  type: ClusterIP
+  selector:
+    app: products-service # This must exactly match the Deployment's template labels
+  ports:
+  - protocol: TCP
+    port: 8001
+    targetPort: 8001
