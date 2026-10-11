@@ -1,0 +1,43 @@
+name: order-service
+
+image:
+  repository: order-service
+
+port: 8004
+
+env:
+  GO_ENV: production
+  ORDER_DB_HOST: pg-orders-svc
+  ORDER_DB_PORT: "5432"
+  ORDER_DB_NAME: orders
+  RABBITMQ_HOST: rabbitmq-svc
+  RABBITMQ_PORT: "5672"
+  CART_SERVICE_URL: "http://cart-service:8003"
+  PRODUCT_SERVICE_URL: "http://products-service:8001"
+  LOG_LEVEL: info
+
+
+secrets:
+  - name: ORDER_DB_USER
+    secretName: orders-db-credentials
+    key: POSTGRES_USER
+  - name: ORDER_DB_PASSWORD
+    secretName: orders-db-credentials
+    key: POSTGRES_PASSWORD
+  - name: RABBITMQ_USER
+    secretName: rabbitmq-credentials
+    key: RABBITMQ_DEFAULT_USER
+  - name: RABBITMQ_PASSWORD
+    secretName: rabbitmq-credentials
+    key: RABBITMQ_DEFAULT_PASS
+  - name: JWT_SECRET
+    secretName: jwt-secret
+    key: JWT_SECRET
+
+
+readinessProbe:
+  httpGet:
+    port: 8004
+livenessProbe:
+  tcpSocket:
+    port: 8004

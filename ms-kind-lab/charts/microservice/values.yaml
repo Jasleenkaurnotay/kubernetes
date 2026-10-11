@@ -1,0 +1,26 @@
+replicaCount: 2
+
+image:
+  tag: local
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8001
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+livenessProbe:
+  tcpSocket:
+    port: 8001
+  initialDelaySeconds: 15
+  periodSeconds: 10

@@ -1,0 +1,33 @@
+name: user-service
+
+image:
+  repository: user-service
+
+port: 8002
+
+env:
+  USER_DB_HOST: pg-users-svc
+  USER_DB_PORT: "5432"
+  USER_DB_NAME: users
+  JWT_EXPIRY: "24h"
+  NODE_ENV: production
+  LOG_LEVEL: info
+
+secrets:
+  - name: USER_DB_USER
+    secretName: users-db-credentials
+    key: POSTGRES_USER
+  - name: USER_DB_PASSWORD
+    secretName: users-db-credentials
+    key: POSTGRES_PASSWORD
+  - name: JWT_SECRET
+    secretName: jwt-secret
+    key: JWT_SECRET
+
+readinessProbe:
+  httpGet:
+    port: 8002
+  
+livenessProbe:
+  tcpSocket:
+    port: 8002

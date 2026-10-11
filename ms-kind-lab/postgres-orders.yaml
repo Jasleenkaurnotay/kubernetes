@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-orders-svc
+  namespace: ecom-app
+spec:
+  ports:
+    - port: 5432
+  clusterIP: None
+  selector:
+    app: postgres-orders
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pg-orders-sfs
+  namespace: ecom-app
+spec:
+  selector:
+    matchLabels:
+      app: postgres-orders # has to match .spec.template.metadata.labels
+  serviceName: pg-orders-svc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres-orders # has to match .spec.selector.matchLabels
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: orders-db-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: orders-db-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: "orders"
+            - name: PGDATA     # subfolder, so initdb never sees lost+found at the volume root
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: orders-vol
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"']   # pg_isready, user from $POSTGRES_USER
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"']
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+  volumeClaimTemplates:
+      - metadata:
+          name: orders-vol
+        spec:
+          accessModes: [ReadWriteOnce]
+          storageClassName: standard
+          resources:
+            requests:
+              storage: "512Mi"

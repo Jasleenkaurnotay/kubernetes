@@ -1,0 +1,29 @@
+name: cart-service
+
+image:
+  repository: cart-service
+
+port: 8003
+
+env:
+  LOG_LEVEL: info
+  PRODUCT_SERVICE_URL: http://products-service:8001
+  REDIS_HOST: redis-svc
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+secrets:
+  - name: REDIS_PASSWORD
+    secretName: redis-credentials
+    key: REDIS_PASSWORD
+  - name: JWT_SECRET
+    secretName: jwt-secret
+    key: JWT_SECRET
+
+readinessProbe:
+  httpGet:
+    port: 8003
+
+livenessProbe:
+  tcpSocket:
+    port: 8003

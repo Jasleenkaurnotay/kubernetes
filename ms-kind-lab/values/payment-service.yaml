@@ -1,0 +1,40 @@
+name: payment-service
+
+image:
+  repository: payment-service
+
+port: 8005
+
+env:
+  PAYMENT_DB_HOST: pg-payments-svc
+  PAYMENT_DB_PORT: "5432"
+  PAYMENT_DB_NAME: payments
+  ORDER_SERVICE_URL: "http://order-service:8004"
+  LOG_LEVEL: info
+
+secrets:
+  - name: PAYMENT_DB_USER
+    secretName: payments-db-credentials
+    key: POSTGRES_USER
+  - name: PAYMENT_DB_PASSWORD
+    secretName: payments-db-credentials
+    key: POSTGRES_PASSWORD
+  - name: RAZORPAY_KEY_ID
+    secretName: razorpay-credentials
+    key: RAZORPAY_KEY_ID
+  - name: RAZORPAY_KEY_SECRET
+    secretName: razorpay-credentials
+    key: RAZORPAY_KEY_SECRET
+  - name: RAZORPAY_WEBHOOK_SECRET
+    secretName: razorpay-credentials
+    key: RAZORPAY_WEBHOOK_SECRET
+  - name: JWT_SECRET
+    secretName: jwt-secret
+    key: JWT_SECRET
+
+readinessProbe:
+  httpGet:
+    port: 8005
+livenessProbe:
+  tcpSocket:
+    port: 8005

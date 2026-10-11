@@ -1,0 +1,26 @@
+name: notification-service
+
+image:
+  repository: notification-service
+
+port: 8006
+
+env:
+  RABBITMQ_HOST: rabbitmq-svc
+  RABBITMQ_PORT: "5672"
+  LOG_LEVEL: info
+
+secrets:
+  - name: RABBITMQ_USER
+    secretName: rabbitmq-credentials
+    key: RABBITMQ_DEFAULT_USER
+  - name: RABBITMQ_PASSWORD
+    secretName: rabbitmq-credentials
+    key: RABBITMQ_DEFAULT_PASS
+
+readinessProbe:
+  httpGet:
+    port: 8006
+livenessProbe:
+  tcpSocket:
+    port: 8006

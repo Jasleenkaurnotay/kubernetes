@@ -1,0 +1,20 @@
+name: products-service
+
+image:
+  repository: product-service
+
+port: 8001
+
+env:
+  GO_ENV: production
+  PRODUCT_DB_HOST: pg-products-svc
+  PRODUCT_DB_PORT: "5432"
+  PRODUCT_DB_NAME: products
+
+secrets:
+  - name: PRODUCT_DB_USER
+    secretName: products-db-credentials
+    key: POSTGRES_USER
+  - name: PRODUCT_DB_PASSWORD
+    secretName: products-db-credentials
+    key: POSTGRES_PASSWORD
