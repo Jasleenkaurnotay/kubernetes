@@ -1,0 +1,14 @@
+aws_region               = "us-east-1"
+eks_cluster_name         = "eks-dev-cluster"
+vpc_tag_value             = "EKSInfra"
+project_name              = "devopsquiz"
+k8_svc_namespace          = "devopsquiz-app"
+k8_be_svc_name            = "backend-service"
+k8_be_svc_port            = 8000
+k8_fe_svc_name            = "frontend-service"
+k8_fe_svc_port            = 80
+domain_name               = "notaylabs.com"
+cert_domain_name          = "*.notaylabs.com"
+route53_record_name       = "devopsquiz.notaylabs.com"
+argo_route53_domain_name  = "argocd.notaylabs.com"
+argo_release_name         = "argocd"

@@ -14,19 +14,23 @@ USERS_LOGIN_URL="${API_URL}/api/users/login"
 CART_ITEMS_URL="${API_URL}/api/cart/items"
 
 # ---------------------------------------------------------------------------
-# Preflight: wait until the api-gateway can reach backend services.
-# Without this we race the chart install and burn the Job's backoffLimit.
+# Preflight: wait until the gateway can reach each backend.
+# We do not need a 200. Any real HTTP answer (even 401 or 404) proves the
+# route works end to end. 000 = no connection, 502/503/504 = gateway or
+# backend not ready yet.
 # ---------------------------------------------------------------------------
-wait_for_health() {
+wait_for_route() {
   local name="$1"
   local url="$2"
+  local code
   for attempt in $(seq 1 "$PREFLIGHT_ATTEMPTS"); do
-    if curl -fsS --max-time 3 "$url" >/dev/null 2>&1; then
-      echo "  $name is reachable."
-      return 0
-    fi
+    code=$(curl -s -o /dev/null --max-time 3 -w '%{http_code}' "$url" || true)
+    case "$code" in
+      000|502|503|504) ;;
+      *) echo "  $name is reachable (HTTP $code)."; return 0 ;;
+    esac
     if [ "$attempt" = "$PREFLIGHT_ATTEMPTS" ]; then
-      echo "ERROR: $name not reachable at $url after $((PREFLIGHT_ATTEMPTS * PREFLIGHT_SLEEP))s" >&2
+      echo "ERROR: $name not reachable at $url after $((PREFLIGHT_ATTEMPTS * PREFLIGHT_SLEEP))s (last HTTP $code)" >&2
       return 1
     fi
     sleep "$PREFLIGHT_SLEEP"
@@ -34,8 +38,8 @@ wait_for_health() {
 }
 
 echo "Waiting for api-gateway at $API_URL ..."
-wait_for_health "product-service" "$API_URL/api/health/product-service"
-wait_for_health "user-service" "$API_URL/api/health/user-service"
+wait_for_route "product-service" "$PRODUCTS_URL"
+wait_for_route "user-service"    "$API_URL/api/users/profile"
 
 # ---------------------------------------------------------------------------
 # Users — idempotent via register (409 = already exists)
@@ -114,7 +118,7 @@ products=(
 )
 
 product_failures=0
-first_product_id=""
+created_ids=()
 for product in "${products[@]}"; do
   name=$(echo "$product" | python3 -c "import sys,json; print(json.load(sys.stdin)['name'])" 2>/dev/null || echo "product")
   response=$(curl -s -w "\n%{http_code}" -X POST "$PRODUCTS_URL" \
@@ -123,9 +127,8 @@ for product in "${products[@]}"; do
   body=$(echo "$response" | sed '$d')
   if [ "$http_code" = "201" ] || [ "$http_code" = "200" ]; then
     echo "  + $name"
-    if [ -z "$first_product_id" ]; then
-      first_product_id=$(echo "$body" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
-    fi
+    new_id=$(echo "$body" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
+    if [ -n "$new_id" ]; then created_ids+=("$new_id"); fi
   elif [ "$http_code" = "409" ]; then
     echo "  ~ $name (SKU already exists)"
   else
@@ -147,8 +150,8 @@ token=$(curl -s -X POST "$USERS_LOGIN_URL" \
   | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))" 2>/dev/null || true)
 
 cart_items_added=0
-if [ -n "$token" ] && [ -n "$first_product_id" ]; then
-  for product_id in "$first_product_id" "$((${first_product_id:-0} + 1))"; do
+if [ -n "$token" ] && [ "${#created_ids[@]}" -ge 2 ]; then
+  for product_id in "${created_ids[0]}" "${created_ids[1]}"; do
     http_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$CART_ITEMS_URL" \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer $token" \

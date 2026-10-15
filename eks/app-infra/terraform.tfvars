@@ -1,0 +1,16 @@
+vpc_tag_value             = "EKSInfra"
+pvt_sub_tag_value         = "private"
+eks_cluster_name          = "eks-dev-cluster"
+svc_names                 = ["backend", "frontend"]
+frontend_svc_name         = "frontend"
+backend_svc_name          = "backend"
+backend_pod_label         = "backend"
+frontend_pod_label        = "frontend"
+argo_route53_domain_name  = "argocd.notaylabs.com"
+k8s_argocd_namespace      = "argocd"
+rds_name                  = "k8_db_server"
+rds_db_name               = "k8_db"
+rds_username              = "k8_user"
+flask_debug               = 0
+backend_image_tag         = "latest"
+frontend_image_tag        = "latest"

@@ -2,24 +2,28 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: seed-data-job
-  namespace: ecommerce
+  namespace: ecom-app
   labels:
     app: seed-data-job
 spec:
-  ttlSecondsAfterFinished: 300
-  backoffLimit: 3
+  ttlSecondsAfterFinished: 600   # Kubernetes deletes the finished Job and its pod after 10 min
+  backoffLimit: 2                # retries after a failed pod (not after success)
+  activeDeadlineSeconds: 900     # hard stop for the whole Job, so it can never hang forever
   template:
     metadata:
       labels:
         app: seed-data-job
     spec:
+      restartPolicy: Never       # Jobs must use Never or OnFailure, never Always
       containers:
-      - name: seed-data
-        image: ms-ecom-seed:latest
-        imagePullPolicy: Never
-        env:
-        - name: API_URL
-          value: "http://api-gateway.ecommerce.svc.cluster.local"
-        - name: SEED_PASSWORD
-          value: "Password123!"
-      restartPolicy: Never
+        - name: seed-data
+          image: ms-ecom-seed:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: API_URL
+              value: "http://api-gateway.ecom-app.svc.cluster.local"
+            - name: SEED_PASSWORD
+              value: "Password123!"   # demo accounts only; real secrets would come from a Secret
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+            limits:   { cpu: 200m, memory: 128Mi }
